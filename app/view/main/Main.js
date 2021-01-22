@@ -125,67 +125,51 @@ Ext.define('TualoMDE.view.main.Main', {
             tools: [{
 
                 iconCls: 'x-fa fa-search',
-            }, {
                 xtype: 'button',
-                cls: 'whitebtntext',
-                bind: {
-                    text: '{currentClient}'
-                },
-                reference: 'clientMenu',
-                iconCls: 'x-fa fa-bars',
-                menu: {
-                    layout: {
-                        overflow: 'scroller'
-                    },
+                handler: 'onSearch'
 
-                    items: []
-                }
-            }, {
-                iconCls: 'x-fa fa-sync',
-                handler: 'onSyncClick'
-            }],
+            }], 
             items: [
-                /*
                 {
-                    xtype: 'breadcrumbbar',
-                    docked: 'top',
-                    showIcons: true,
-                    store: 'Navigation',
-                    menu: {
-                       "layout": {
-                          "overflow": "scroller"
-                       },
-                       "maxHeight": 500
-                    },
-                    items: []
-                },
-                */
-                /*{
                     xtype: 'toolbar',
-                    docked: 'top',
+                    docked: 'bottom',
                     layout: {
                         overflow: 'scroller'
                     },
-                    items: [{
-                        bind:{
-                            text: '{currentClient}'
+                    items: [
+                        {
+                            xtype: 'label',
+                            padding: '0 0 0 15',
+                            bind: {
+                                html: '{fullname}'
+                            }
                         },
-                        reference: 'clientMenu',
-                        iconCls: 'x-fa fa-bars',
-                        menu: {
-                            layout: {
-                                overflow: 'scroller'
+                        {
+                            xtype: 'spacer'
+                        },
+                        {
+                            xtype: 'button',
+                            bind: {
+                                text: '{currentClient}'
                             },
-                            
-                            items: [ ]
+                            reference: 'clientMenu',
+                            iconCls: 'x-fa fa-bars',
+                            menu: {
+                                layout: {
+                                    overflow: 'scroller'
+                                },
+            
+                                items: []
+                            }
+                        },
+                        {
+                            xtype: 'button',
+                            iconCls: 'x-fa fa-sync',
+                            padding: '0 15 0 0',
+                            handler: 'onSyncClick'
                         }
-                    },{
-                        iconCls: 'x-fa fa-search',
-                    },{
-                        iconCls: 'x-fa fa-sync',
-                        handler: 'onSyncClick'
-                    }]
-                },*/
+                    ]
+                },
 
                 {
                     xtype: 'panel',
@@ -211,7 +195,7 @@ Ext.define('TualoMDE.view.main.Main', {
                     bbar: {
                         reference: 'bbar',
                         items: [{
-                            text: '&laquo; Previous',
+                            text: '&laquo; Zurück',
                             handler: 'onPrevious',
                             bind: {
                                 disabled: '{!indicator.activeIndex}'
@@ -243,39 +227,58 @@ Ext.define('TualoMDE.view.main.Main', {
                             }
                         },
                         {
-                            xtype: 'list',
-                            iconCls: 'x-fa fa-users',
-                            reference: 'customers',
-                            itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
-                            store: 'Kunden',
-                            plugins: {
-                                listswiper: {
-                                    defaults: {
-                                        ui: 'action'
+                            xtype: 'panel',
+                            shadow: 'true',
+                            layout: 'vbox',
+                            items: [
+                                {
+                                    xtype: 'searchfield',
+                                    ui: 'solo',
+                                    bind: {
+                                        hidden: '{!searchmode}'
                                     },
-                                    
-                                    left: [{
-                                        iconCls: 'x-fa fa-doc',
-                                        text: 'letzter Beleg',
-                                        commit: 'onReport'
-                                    }],
-                                    
-                                    right: [{
-                                        iconCls: 'x-fa fa-envelope',
-                                        ui: 'alt confirm',
-                                        text: 'Message',
-                                        commit: 'onMessage'
-                                    }, {
-                                        iconCls: 'x-fa fa-cog',
-                                        text: 'Gear',
-                                        commit: 'onGear'
-                                    }]
+                                    placeholder: 'Suchen',
+                                    listeners: {
+                                        buffer: 1000,
+                                        change: 'doSearch'
+                                    }
+                                },
+                                {
+                                    xtype: 'list',
+                                    iconCls: 'x-fa fa-users',
+                                    reference: 'customers',
+                                    itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
+                                    store: 'Kunden',
+                                    plugins: {
+                                        listswiper: {
+                                            defaults: {
+                                                ui: 'action'
+                                            },
+                                            
+                                            left: [{
+                                                iconCls: 'x-fa fa-doc',
+                                                text: 'letzter Beleg',
+                                                commit: 'onReport'
+                                            }],
+                                            
+                                            right: [{
+                                                iconCls: 'x-fa fa-envelope',
+                                                ui: 'alt confirm',
+                                                text: 'Message',
+                                                commit: 'onMessage'
+                                            }, {
+                                                iconCls: 'x-fa fa-cog',
+                                                text: 'Gear',
+                                                commit: 'onGear'
+                                            }]
+                                        }
+                                    },
+                                    listeners: {
+                                        //itemtaphold: 'onTourTab'
+                                        itemtap: 'onCustomerTab'
+                                    }
                                 }
-                            },
-                            listeners: {
-                                //itemtaphold: 'onTourTab'
-                                itemtap: 'onCustomerTab'
-                            }
+                            ]
                         },
                         {
                             xtype: 'panel',

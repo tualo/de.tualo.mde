@@ -66,13 +66,18 @@ Ext.define('TualoMDE.view.main.MainController', {
 
 
     onPrevious: function() {
+
         var card = this.lookup('maincard').getLayout();
         card.previous();
     },
     onTourTab: function(list, index, target, record, e, eOpts){
-        var card = this.lookup('maincard').getLayout();
+        let  model = this.getViewModel(),
+            card = this.lookup('maincard').getLayout();
+
+        model.set('tour',record.get('tour'));
+        Ext.data.StoreManager.lookup('Kunden').clearFilter();
         Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
-            if (rec.get('tour')==record.get('tour')){
+            if (rec.get('tour')==model.get('tour')){
                 return true;
             }else{
                 return false;
@@ -84,8 +89,9 @@ Ext.define('TualoMDE.view.main.MainController', {
         this.onNewReport('',customerrecord);
     },
     onNewReport: function(reporttype,customerrecord){
-        var card = this.lookup('maincard').getLayout();
-        
+        let  model = this.getViewModel(),
+            card = this.lookup('maincard').getLayout();
+        model.set('customerrecord',customerrecord);
         card.next();
     },
     onPositionNote: function(dataview,item){
@@ -119,6 +125,7 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
     onOverview: function(){
         var card = this.lookup('maincard').getLayout();
+        this.getReportFromData();
         card.next();
     },
     onSave: function(){
@@ -214,5 +221,72 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
     onDestroy: function(){
         console.log('onDestroy',arguments);
+    },
+    onSearch: function(){
+        let  model = this.getViewModel(),
+        maincard = this.lookup('maincard'),
+        card = maincard.getLayout();
+        
+        
+            model.set('searchmode',!model.get('searchmode') );
+        if( card.getIndicator().getActiveIndex() == 0 ){
+            model.set('tour', null);
+            Ext.data.StoreManager.lookup('Kunden').clearFilter();
+            Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
+                if  ( (rec.get('tour')==model.get('tour')) || (model.get('tour')==null) ) {
+                    return true;
+                }else{
+                    return false;
+                }
+            });
+            card.next();
+        }
+    },
+    doSearch: function(field){
+        let  model = this.getViewModel(),
+            value = field.getValue();
+        
+        Ext.data.StoreManager.lookup('Kunden').clearFilter();
+        Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
+            if  ( (rec.get('tour')==model.get('tour')) || (model.get('tour')==null) ) {
+                if (
+                    rec.get('name').toLowerCase().indexOf(value)>=0
+                ){
+                    return true;
+                }
+            }else{
+                return false;
+            }
+        });
+        
+    },
+    getReportFromData: function(){
+        let  model = this.getViewModel(),
+            card = this.lookup('maincard').getLayout(),
+            customer = model.get('customerrecord'),
+            positionen  = Ext.data.StoreManager.lookup('Positionen').getRange(),
+            o = {
+                "id": -1,
+                "date": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
+                "time": Ext.util.Format.date(model.get('currentDate'),'H:i:s'),
+                "bookingdate": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
+                "service_period_start": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
+                "service_period_stop": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
+
+                "warehouse": 0,
+                "reference": model.get('referenceNumber'),
+                "address": [
+                    customer.get('name'),
+                    customer.get('strasse')+' '+customer.get('hausnr'),
+                    customer.get('plz')+' '+customer.get('ort')
+                ].join("\n"),
+                "companycode": customer.get('companycode'),
+                "office": customer.get('office'),
+        
+                "positions": [],
+                "signum": []
+            };
+    
+        console.log(o);
     }
 });
