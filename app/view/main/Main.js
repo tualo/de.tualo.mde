@@ -12,6 +12,7 @@ Ext.define('TualoMDE.view.main.Main', {
         'Ext.layout.Fit',
         'TualoMDE.store.Tours',
         'Ext.Toast',
+        'Ext.d3.canvas.Canvas',
         'Ext.BreadcrumbBar'
     ],
 
@@ -202,6 +203,9 @@ Ext.define('TualoMDE.view.main.Main', {
                                 'activeIndex',
                                 'count'
                             ]
+                        },
+                        animation: {
+                            type: 'slide'
                         }
                     },
                     bbar: {
@@ -211,6 +215,19 @@ Ext.define('TualoMDE.view.main.Main', {
                             handler: 'onPrevious',
                             bind: {
                                 disabled: '{!indicator.activeIndex}'
+                            }
+                        },{
+                            text: 'Übersicht',
+                            handler: 'onOverview',
+                            bind: {
+                                hidden: '{indicator.activeIndex != 2}'
+                            }
+                        },{
+                            text: 'Speichern',
+                            handler: 'onSave',
+                            ui: 'confirm',
+                            bind: {
+                                hidden: '{indicator.activeIndex != 3}'
                             }
                         }]
                     },
@@ -321,11 +338,7 @@ Ext.define('TualoMDE.view.main.Main', {
                                             ui: 'alt confirm',
                                             text: 'Bemerkung',
                                             commit: 'onPositionNote'
-                                        }/*, {
-                                            iconCls: 'x-fa fa-cog',
-                                            text: 'Gear',
-                                            commit: 'onGear'
-                                        }*/]
+                                        }]
                                     }
                                 },
                                 store: 'Positionen',
@@ -372,6 +385,57 @@ Ext.define('TualoMDE.view.main.Main', {
                             layout: {
                                 type: 'vbox'
                             },
+                            items: [
+                                {
+                                    autoHeight: true,
+                                    margin: '0 0 10 0',
+                                    padding: '12 12 12 12',
+                                    bind: {
+                                        html: [
+                                            'K.Nr.: <b>{customers.selection.kundennummer}/{customers.selection.kostenstelle}</b>',
+                                            '{customers.selection.name}',
+                                            '{customers.selection.strasse} {customers.selection.hausnr}',
+                                            '{customers.selection.plz} {customers.selection.ort}',
+                                            // '{customers.selection.telefon}',
+                                        ].join('<br/>')
+                                    }
+                                }, 
+                                {
+                                    xtype: 'panel',
+                                    padding: '12 12 12 12',
+                                    bind: {
+                                        html: '{overview}'
+                                    },
+                                    flex: 1
+                                }, 
+                                {
+                                    xtype: 'd3-canvas',
+                                    border: true,
+                                    shaddow: true,
+                                    margin: '12 12 12 12',
+                                    flex: 1,
+                                    listeners: {
+                                        sceneresize: 'onSignumSceneResize',
+                                        mousemove: {
+                                            fn: 'onSignumMouseMove',
+                                            element: 'element',
+                                            scope: 'controller'
+                                        },
+                                        mousedown: {
+                                            fn: 'onSignumMouseDown',
+                                            element: 'element',
+                                            scope: 'controller'
+                                        },
+                                        mouseup: {
+                                            fn: 'onSignumMouseUp',
+                                            element: 'element',
+                                            scope: 'controller'
+                                        },
+                                        destroy: 'onDestroy'
+                            
+                                    }
+                                }
+                            ]
                         }
                     ]
                 },
