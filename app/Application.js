@@ -29,6 +29,34 @@ Ext.define('TualoMDE.Application', {
 
     launch: function(){
         let me = this;
+        // console.log( 'Ext.device.Connection.isOnline()',Ext.device.Connection.isOnline());
+        /*
+        Ext.device.Notification.show({
+            title: 'Verification',
+            message: 'Is your email address: test@sencha.com',
+            buttons: Ext.MessageBox.OKCANCEL,
+            callback: function(button) {
+                if (button === "ok") {
+                    console.log('Verified');
+                } else {
+                    console.log('Nope');
+                }
+            }
+        });
+        */
+        /*
+       Ext.device.Camera.capture({
+            success: function(image) {
+                //imageView.setSrc(image);
+                console.log(image);
+            },
+            quality: 75,
+            width: 200,
+            height: 200,
+            destination: 'data'
+        });
+        */
+    
         TualoMDE.security.Authentication.isLoggedIn().then(function(res) {
             if (res){
                 me.getMainView().getViewModel().set('fullname',TualoMDE.security.ClientStorage.retrieve().fullname);

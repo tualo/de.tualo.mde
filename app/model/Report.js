@@ -1,5 +1,8 @@
-Ext.define('TualoMDE.model.ReportHeader', {
+Ext.define('TualoMDE.model.Report', {
     extend: 'TualoMDE.model.Base',
+    requires: [
+        'TualoMDE.model.ReportPosition'
+    ],
 
     fields: [
 

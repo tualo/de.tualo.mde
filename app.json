@@ -46,7 +46,8 @@
      */
     "requires": [
         "font-awesome",
-        "d3"
+        "d3",
+        "legacy"
     ],
 
     /**

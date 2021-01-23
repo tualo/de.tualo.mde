@@ -4,7 +4,8 @@ Ext.define('TualoMDE.model.ReportPosition', {
     fields: [
 
         {name: "id",                    type:"number",  critical: true},
-        {name: "report",                type:"number",  critical: true,     reference: "ReportHeader"},
+        {name: "position",              type:"number",  critical: true},
+        {name: "reportnr",              type:"number",  critical: true,     reference: "ReportHeader"},
         {name: "date",                  type:"date",    critical: false,    dateFormat: 'Y-m-d', defaultValue: new Date() },
         {name: "article",               type:"string",  critical: true},
         {name: "additionatext",         type:"string",  critical: false},
