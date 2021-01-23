@@ -7,6 +7,7 @@ Ext.define('TualoMDE.view.main.MainController', {
 
     alias: 'controller.main',
     init: function() {
+        /*
         var bbar = this.lookup('bbar'),
             card = this.lookup('maincard').getLayout(),
 
@@ -15,26 +16,29 @@ Ext.define('TualoMDE.view.main.MainController', {
 
         // Render it into our bottom toolbar (bbar)
         bbar.insert(1, indicator);
+        */
     },
 
     onPainted: function(){
         let me = this;
+        /*
         let clientMenu = this.lookup('clientMenu').getMenu();
-        App.security.Authentication.isLoggedIn().then(function(res) {
-            let data = App.security.ClientStorage.retrieve();
+        TualoMDE.security.Authentication.isLoggedIn().then(function(res) {
+            let data = TualoMDE.security.ClientStorage.retrieve();
             me.getViewModel().set('currentClient',data.client);
             data.clients.forEach(function(item){
                 clientMenu.add({
                     text: item.client,
                     handler: function(btn){
-                        let data = App.security.ClientStorage.retrieve();
+                        let data = TualoMDE.security.ClientStorage.retrieve();
                         data.client = btn.getText();
-                        App.security.ClientStorage.save(data);
+                        TualoMDE.security.ClientStorage.save(data);
                         me.getViewModel().set('currentClient',data.client);
                     }
                 });
             })
         });
+        */
     },
     onKeyPressLast: function (me, e, o) {
         if (e.keyCode === 13) {
@@ -43,14 +47,14 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
     onLoginClick: function(){
         let values = this.lookup('loginform').getValues();
-        App.security.TokenStorage.clear();
-        App.security.UrlStorage.save(values.url);
-        App.security.Authentication.login(values.username,values.password).then(this.onLoginSuccess).catch(this.onLoginFailure);
+        TualoMDE.security.TokenStorage.clear();
+        TualoMDE.security.UrlStorage.save(values.url);
+        TualoMDE.security.Authentication.login(values.username,values.password).then(this.onLoginSuccess).catch(this.onLoginFailure);
     },
     onLoginSuccess: function(){
         Ext.toast('Anmeldung erfolgreich');
         try{
-            TualoMDE.getApplication().getMainView().getViewModel().set('fullname',App.security.ClientStorage.retrieve().fullname);
+            TualoMDE.getApplication().getMainView().getViewModel().set('fullname',TualoMDE.security.ClientStorage.retrieve().fullname);
             TualoMDE.getApplication().getMainView().setActiveItem(2);
         }catch(e){
             console.log(e);

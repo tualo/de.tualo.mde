@@ -1,4 +1,4 @@
-Ext.define('App.security.ClientStorage', {
+Ext.define('TualoMDE.security.ClientStorage', {
     singleton: true,
     storageKey: 'json-web-client',
 

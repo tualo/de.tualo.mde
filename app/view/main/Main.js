@@ -10,7 +10,18 @@ Ext.define('TualoMDE.view.main.Main', {
     requires: [
         'Ext.MessageBox',
         'Ext.layout.Fit',
+        'Ext.layout.VBox',
+        'Ext.layout.Card',
+        'Ext.form.Panel',
+        'Ext.field.Text',
+        'Ext.field.Display',
+        'Ext.field.Search',
+        'Ext.dataview.listswiper.ListSwiper',
+        'Ext.dataview.Component',
         'TualoMDE.store.Tours',
+        'TualoMDE.store.Navigation',
+        'TualoMDE.store.Customers',
+        'TualoMDE.store.Positionen',
         'Ext.Toast',
         'Ext.d3.canvas.Canvas',
         'Ext.BreadcrumbBar'
@@ -74,7 +85,7 @@ Ext.define('TualoMDE.view.main.Main', {
 
                                 listeners: {
                                     painted: function (me) {
-                                        me.setValue(App.security.UrlStorage.retrieve());
+                                        me.setValue(TualoMDE.security.UrlStorage.retrieve());
                                     },
                                     keypress: function (me, e, o) {
                                         if (e.keyCode === 13) {
@@ -280,6 +291,7 @@ Ext.define('TualoMDE.view.main.Main', {
                                 }
                             ]
                         },
+                        
                         {
                             xtype: 'panel',
                             layout: {
@@ -440,6 +452,7 @@ Ext.define('TualoMDE.view.main.Main', {
                                 }
                             ]
                         }
+                        
                     ]
                 },
                 {

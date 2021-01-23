@@ -1,4 +1,33 @@
 {
+    "builds": {
+        "web": {"default": true},
+        "native": {
+            "packager": "cordova",
+            "cordova" : {
+                "config": {
+                    // Uncomment the line below and add the platforms you wish to build for
+                    "platforms": "ios android",
+
+                    "id": "de.tualo.mde",
+                    "name": "TualoMDE"
+                }
+            }
+        },
+        "native_android": {
+            "packager": "cordova",
+            "cordova" : {
+                "config": {
+                    // Uncomment the line below and add the platforms you wish to build for
+                    "platforms": "android",
+
+                    "id": "de.tualo.mde",
+                    "name": "TualoMDE"
+                }
+            }
+        }
+    },
+
+                
     "name": "TualoMDE",
     "namespace": "TualoMDE",
     "version": "1.0.0.0",

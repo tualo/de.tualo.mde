@@ -1,4 +1,4 @@
-Ext.define('App.security.RemoteSetupStorage', {
+Ext.define('TualoMDE.security.RemoteSetupStorage', {
     singleton: true,
     storageKey: 'json-web-remotesetup',
 

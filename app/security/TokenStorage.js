@@ -1,4 +1,4 @@
-Ext.define('App.security.TokenStorage', {
+Ext.define('TualoMDE.security.TokenStorage', {
     singleton: true,
     storageKey: 'json-web-token',
 

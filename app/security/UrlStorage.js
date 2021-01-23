@@ -1,4 +1,4 @@
-Ext.define('App.security.UrlStorage', {
+Ext.define('TualoMDE.security.UrlStorage', {
     singleton: true,
     storageKey: 'json-web-url',
 

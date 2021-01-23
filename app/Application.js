@@ -6,9 +6,11 @@
 Ext.define('TualoMDE.Application', {
     extend: 'Ext.app.Application',
     requires: [
-        'App.security.Authentication',
-        'App.security.ClientStorage',
-        'App.security.RemoteSetupStorage'
+        'TualoMDE.security.Authentication',
+        'TualoMDE.security.ClientStorage',
+        'TualoMDE.security.UrlStorage',
+        'TualoMDE.security.RemoteSetupStorage',
+        'Ext.Ajax'
     ],
     name: 'TualoMDE',
 
@@ -27,9 +29,9 @@ Ext.define('TualoMDE.Application', {
 
     launch: function(){
         let me = this;
-        App.security.Authentication.isLoggedIn().then(function(res) {
+        TualoMDE.security.Authentication.isLoggedIn().then(function(res) {
             if (res){
-                me.getMainView().getViewModel().set('fullname',App.security.ClientStorage.retrieve().fullname);
+                me.getMainView().getViewModel().set('fullname',TualoMDE.security.ClientStorage.retrieve().fullname);
                 me.fillStores();
                 me.getMainView().setActiveItem(2);
             }else{
@@ -39,7 +41,7 @@ Ext.define('TualoMDE.Application', {
     },
 
     fillStores: function(){
-        let remoteData = App.security.RemoteSetupStorage.retrieve();
+        let remoteData = TualoMDE.security.RemoteSetupStorage.retrieve();
         if (remoteData){
             Ext.data.StoreManager.lookup('Touren').loadData(remoteData.tours);
             Ext.data.StoreManager.lookup('Kunden').loadData(remoteData.customers);
@@ -49,15 +51,15 @@ Ext.define('TualoMDE.Application', {
 
     sync: function(){
         Ext.Ajax.request({
-            url: App.security.UrlStorage.retrieve()+'mdesync/sync',
+            url: TualoMDE.security.UrlStorage.retrieve()+'mdesync/sync',
             method: 'GET',
             params: {
-                'oauth_client': App.security.ClientStorage.retrieve().client
+                'oauth_client': TualoMDE.security.ClientStorage.retrieve().client
             },
             success: function (response) {
                 var data = Ext.decode(response.responseText);
                 if (data.success) {
-                    App.security.RemoteSetupStorage.save(data);
+                    TualoMDE.security.RemoteSetupStorage.save(data);
                     console.log(data);
                     //deferred.resolve(data, response);
                 } else {
@@ -67,7 +69,7 @@ Ext.define('TualoMDE.Application', {
 
             failure: function (response) {
                 var data = Ext.decode(response.responseText);
-                App.security.TokenStorage.clear();
+                TualoMDE.security.TokenStorage.clear();
                 deferred.reject(data, response);
             }
         });
