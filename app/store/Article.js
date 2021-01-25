@@ -1,11 +1,11 @@
-Ext.define('TualoMDE.store.Customers', {
+Ext.define('TualoMDE.store.Article', {
     extend: 'Ext.data.Store',
 
-    alias: 'store.customers',
+    alias: 'store.article',
 
     model: 'TualoMDE.model.Customer',
-    storeId: 'Kunden',
-    sorters: 'position',
+    storeId: 'Artikel',
+    sorters: ['wgsort','pos'],
     proxy: {
         type: 'memory',
         reader: {

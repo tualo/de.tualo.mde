@@ -10,7 +10,7 @@ Ext.define('TualoMDE.store.Tours', {
         type: 'memory',
         reader: {
             type: 'json',
-            rootProperty: 'items'
+            rootProperty: 'data'
         }
     }
 });

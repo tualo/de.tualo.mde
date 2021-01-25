@@ -303,10 +303,8 @@ Ext.define('TualoMDE.view.main.Main', {
                                 padding: '12 12 12 12',
                                 bind: {
                                     html: [
-                                        'K.Nr.: {customers.selection.kundennummer}/{customers.selection.kostenstelle}',
-                                        '{customers.selection.name}',
-                                        '{customers.selection.strasse} {customers.selection.hausnr}',
-                                        '{customers.selection.plz} {customers.selection.ort}',
+                                        'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
+                                        '<pre>{report.address}</pre>'
                                         // '{customers.selection.telefon}',
                                     ].join('<br/>')
                                 }
@@ -319,15 +317,16 @@ Ext.define('TualoMDE.view.main.Main', {
                                     itemtap: function(list, index, target, record, e, eOpts){
                                         Ext.Msg.prompt(
                                             'Anzahl',
-                                            'Geben Sie die Menge ein',
+                                            'Geben Sie die Menge für "'+record.get('article')+'" ein',
                                             function(btn,val){
-                                                if (btn=='ok') record.set('anzahl',val);
+                                                if (btn=='ok') record.set('amount',val);
                                             },
                                             this,
                                             false,
-                                            record.get('anzahl'),
+                                            record.get('amount'),
                                             {
-                                                xtype: 'numberfield'
+                                                xtype: 'numberfield',
+                                                value: record.get('amount')
                                             }
                                         );
                                     }
@@ -356,7 +355,10 @@ Ext.define('TualoMDE.view.main.Main', {
                                         }]
                                     }
                                 },
-                                store: 'Positionen',
+                                //store: 'Positionen',
+                                bind:{
+                                    store: '{report.positions}'
+                                },
                                 layout: {
                                     type: 'vbox',
 
@@ -365,6 +367,8 @@ Ext.define('TualoMDE.view.main.Main', {
                                 itemConfig: {
                                     xtype: 'panel',
 
+                                    margin: '0 0 10 0',
+                                    minHeight: '60px',
                                     viewModel: true, // enable per-record binding
                                     layout: {
                                         type: 'hbox',
@@ -372,24 +376,24 @@ Ext.define('TualoMDE.view.main.Main', {
                                     },
                                     items: [{
                                         xtype: 'component',
-                                        autoWidth: true,
+                                        width: '20px',
                                         margin: '0 10 0 0',
-                                        padding: '15 0 0 0',
                                         bind: {
-                                            html: '<div style="background-color:{record.farbe};border-radius:20px;width:20px;height:20px;"></div>'
+                                            style: 'background-color:{record.warengruppen_farbe};',
+                                            
                                         }
                                     }, {
                                         xtype: 'component',
                                         flex: 1,
                                         bind: {
-                                            html: '<b>{record.artikel}</b><br>{record.bemerkung}<br> {record.epreis_formated} &euro;'
+                                            html: '<b>{record.article}</b><br>{record.note}<br>'
                                         }
                                     }, {
                                         xtype: 'component',
                                         autoWidth: true,
                                         style: 'text-align: right; font-weight: bold;',
                                         bind: {
-                                            html: '{record.anzahl_formated}'
+                                            html: '{record.amount}'
                                         }
                                     }]
                                 }
@@ -407,21 +411,51 @@ Ext.define('TualoMDE.view.main.Main', {
                                     padding: '12 12 12 12',
                                     bind: {
                                         html: [
-                                            'K.Nr.: <b>{customers.selection.kundennummer}/{customers.selection.kostenstelle}</b>',
-                                            '{customers.selection.name}',
-                                            '{customers.selection.strasse} {customers.selection.hausnr}',
-                                            '{customers.selection.plz} {customers.selection.ort}',
+                                            'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
+                                            '<pre>{report.address}</pre>'
                                             // '{customers.selection.telefon}',
                                         ].join('<br/>')
                                     }
                                 }, 
                                 {
-                                    xtype: 'panel',
+                                    flex: 2,
                                     padding: '12 12 12 12',
-                                    bind: {
-                                        html: '{overview}'
+                                    xtype: 'componentdataview',
+                                    bind:{
+                                        store: '{report.positions}'
                                     },
-                                    flex: 1
+                                    layout: {
+                                        type: 'vbox',
+    
+                                    },
+                                    scrollable: 'y',
+                                    itemConfig: {
+                                        xtype: 'panel',
+                                        bind: {
+                                            hidden: '{record.amount==0}'
+                                        },
+                                        margin: '0 0 0 0',
+                                        minHeight: '60px',
+                                        viewModel: true, // enable per-record binding
+                                        layout: {
+                                            type: 'hbox',
+                                            align: 'strech'
+                                        },
+                                        items: [{
+                                            xtype: 'component',
+                                            flex: 1,
+                                            bind: {
+                                                html: '{record.article}<br>{record.note}'
+                                            }
+                                        }, {
+                                            xtype: 'component',
+                                            autoWidth: true,
+                                            style: 'text-align: right;',
+                                            bind: {
+                                                html: '{record.amount}'
+                                            }
+                                        }]
+                                    }
                                 }, 
                                 {
                                     xtype: 'd3-canvas',

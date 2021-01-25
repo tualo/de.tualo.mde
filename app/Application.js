@@ -24,7 +24,8 @@ Ext.define('TualoMDE.Application', {
         'TualoMDE.store.Tours',
         'TualoMDE.store.Customers',
         'TualoMDE.store.Navigation',
-        'TualoMDE.store.Positionen'
+        'TualoMDE.store.Positionen',
+        'TualoMDE.store.Article'
     ],
 
     launch: function(){
@@ -74,6 +75,7 @@ Ext.define('TualoMDE.Application', {
             Ext.data.StoreManager.lookup('Touren').loadData(remoteData.tours);
             Ext.data.StoreManager.lookup('Kunden').loadData(remoteData.customers);
             Ext.data.StoreManager.lookup('Positionen').loadData(remoteData.carticles);
+            Ext.data.StoreManager.lookup('Artikel').loadData(remoteData.articles);
         }
     },
 

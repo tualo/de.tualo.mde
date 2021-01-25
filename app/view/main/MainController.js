@@ -7,7 +7,6 @@ Ext.define('TualoMDE.view.main.MainController', {
 
     alias: 'controller.main',
     init: function() {
-        /*
         var bbar = this.lookup('bbar'),
             card = this.lookup('maincard').getLayout(),
 
@@ -16,12 +15,10 @@ Ext.define('TualoMDE.view.main.MainController', {
 
         // Render it into our bottom toolbar (bbar)
         bbar.insert(1, indicator);
-        */
     },
 
     onPainted: function(){
         let me = this;
-        /*
         let clientMenu = this.lookup('clientMenu').getMenu();
         TualoMDE.security.Authentication.isLoggedIn().then(function(res) {
             let data = TualoMDE.security.ClientStorage.retrieve();
@@ -38,7 +35,6 @@ Ext.define('TualoMDE.view.main.MainController', {
                 });
             })
         });
-        */
     },
     onKeyPressLast: function (me, e, o) {
         if (e.keyCode === 13) {
@@ -94,20 +90,58 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
     onNewReport: function(reporttype,customerrecord){
         let  model = this.getViewModel(),
-            card = this.lookup('maincard').getLayout();
+            card = this.lookup('maincard').getLayout(),
+            pos = [],
+            range = [],
+            position = 0,
+            report = new TualoMDE.model.Report({
+                referencenr: customerrecord.get('kundennummer'),
+                costcenter: customerrecord.get('kostenstelle'),
+                address:
+                        customerrecord.get('name')+"\n"+
+                        customerrecord.get('strasse')+' '+customerrecord.get('hausnr')+"\n"+
+                        customerrecord.get('plz')+' '+customerrecord.get('ort')
+            });
+
         model.set('customerrecord',customerrecord);
+        Ext.data.StoreManager.lookup('Artikel').clearFilter();
+        Ext.data.StoreManager.lookup('Artikel').filterBy(function(rec){
+            if (customerrecord.get('preiskategorie')==rec.get('preiskategorie')){
+                return true;
+            }else{
+                return false;
+            }
+        });
+        range = Ext.data.StoreManager.lookup('Artikel').getRange();
+        range.forEach(function(rec){
+            pos.push(new TualoMDE.model.ReportPosition({
+                position: position++,
+                article: rec.get('gruppe'),
+                account: '00000',
+                singleprice: rec.get('preis'),
+                amount: 0,
+                net: 0,
+                gross: 0,
+                vat: 0,
+                taxrate: rec.get('steuer')
+            }));
+        });
+        console.log(report);
+        report.positions().add(pos);
+
+        model.set('report',report);
         card.next();
     },
     onPositionNote: function(dataview,item){
         Ext.Msg.prompt(
             'Bemerkung',
-            'Geben Sie die Bermerkung ein',
+            'Geben Sie die Bemerkung ein',
             function(btn,val){
-                if (btn=='ok') item.record.set('bemerkung',val);
+                if (btn=='ok') item.record.set('note',val);
             },
             this,
             true,
-            item.record.get('bemerkung'),
+            item.record.get('note'),
             {
                 xtype: 'textareafield'
             }
@@ -133,7 +167,15 @@ Ext.define('TualoMDE.view.main.MainController', {
         card.next();
     },
     onSave: function(){
-        var card = this.lookup('maincard').getLayout();
+        let  model = this.getViewModel(),
+            card = this.lookup('maincard').getLayout(),
+            signum = model.get('signum'),
+            report = model.get('report');
+
+        //report.signum().add(signum);
+        //model.set('report',report);
+        console.log(report);
+
         card.previous();
         card.previous();
     },
@@ -141,16 +183,14 @@ Ext.define('TualoMDE.view.main.MainController', {
 
     onSignumMouseMove: function(e,canvas){
         let  model = this.getViewModel(),
-            signum = model.get('signum');
+            report = model.get('report');
         let viewXY = this.view.el.getXY(),
             pageXY = e.getXY(),
             canvasRect = canvas.getBoundingClientRect();
         let x = pageXY[0] - canvasRect.x;
         let y = pageXY[1] - canvasRect.y;
         if (model.get('signumDown')){
-            model.set('signumXY',{x: x, y:y});
-            signum.push({x: x, y:y});
-            model.set('signum',signum);
+            report.signum().add({x: x, y:y,pos: report.signum().count()});
             this.drawSignum(canvas);
         }
     },
@@ -168,7 +208,7 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
     drawSignum: function(canvas){
         let  model = this.getViewModel(),
-        signum = model.get('signum');
+        report = model.get('report');
 
 
         var ctx = canvas.getContext("2d");
@@ -177,24 +217,25 @@ Ext.define('TualoMDE.view.main.MainController', {
         ctx.strokeStyle = "#000";
 
         ctx.save();
-        signum.forEach(function(item){
-
+        report.signum().getRange().forEach(function(item){
+            console.log(item);
             if (last.x!=-1){
-                if (item.x!=-1){
+                if (item.get('x')!=-1){
                     ctx.beginPath();
                     ctx.moveTo(last.x, last.y);
-                    ctx.lineTo(item.x, item.y);
+                    ctx.lineTo(item.get('x'), item.get('y'));
                     ctx.stroke();
                 }
             }
-            last = item;
+            last.x = item.get('x');
+            last.y = item.get('y');
             
         });
         ctx.restore();
     },
     onSignumMouseDown: function(e,canvas){
         let  model = this.getViewModel(),
-        signum = model.get('signum');
+            report = model.get('report');
         let viewXY = this.view.el.getXY(),
             pageXY = e.getXY(),
             canvasRect = canvas.getBoundingClientRect();
@@ -203,14 +244,14 @@ Ext.define('TualoMDE.view.main.MainController', {
 
 
         model.set('signumDown',true);
-        model.set('signumXY',{x: x, y:y});
-        signum.push({x: -1, y:-1});
-        signum.push({x: x, y:y});
-        model.set('signum',signum);
+         
+        report.signum().add({x: -1, y:-1,pos: report.signum().count()});
+        report.signum().add({x: x, y:y,pos: report.signum().count()});
+         
     },
     onSignumMouseUp: function(e,canvas){
         let  model = this.getViewModel(),
-        signum = model.get('signum');
+            report = model.get('report');
         let viewXY = this.view.el.getXY(),
             pageXY = e.getXY(),
             canvasRect = canvas.getBoundingClientRect();
@@ -218,10 +259,10 @@ Ext.define('TualoMDE.view.main.MainController', {
         let y = pageXY[1] - canvasRect.y;
 
         model.set('signumDown',false);
-        model.set('signumXY',{x: x, y:y});
-        signum.push({x: x, y:y});
-        signum.push({x: -1, y:-1});
-        model.set('signum',signum);
+
+        report.signum().add({x: x, y:y,pos: report.signum().count()});
+        report.signum().add({x: -1, y:-1,pos: report.signum().count()});
+
     },
     onDestroy: function(){
         console.log('onDestroy',arguments);

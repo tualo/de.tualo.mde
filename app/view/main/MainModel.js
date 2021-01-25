@@ -23,6 +23,11 @@ Ext.define('TualoMDE.view.main.MainModel', {
         signumXY: [-1,-1],
         signum: []
     },
+    stores: {
+        report: {
+            type: 'report'
+        }
 
+    } 
     //TODO - add data, formulas and/or methods to support your view
 });

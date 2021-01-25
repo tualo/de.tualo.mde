@@ -1,7 +1,8 @@
 Ext.define('TualoMDE.model.Report', {
     extend: 'TualoMDE.model.Base',
     requires: [
-        'TualoMDE.model.ReportPosition'
+        'TualoMDE.model.ReportPosition',
+        'TualoMDE.model.ReportSignum'
     ],
 
     fields: [
@@ -20,10 +21,12 @@ Ext.define('TualoMDE.model.Report', {
         {name: "login",                 type:"string",  critical: false },
         {name: "kindofbill",            type:"string",  critical: true , default: "netto"},
         
+        {name: "referencenr",           type:"string",  critical: true },
+        {name: "costcenter",            type:"number",  critical: true },
+        
         // {name: "positions"},
         {name: "payments"},
         {name: "reductions"},
-        {name: "signum"},
         {name: "texts"},
 
         {
@@ -31,12 +34,15 @@ Ext.define('TualoMDE.model.Report', {
             type: "number", 
             calculate: function (data) {
                 let s=0;
-                data.positions().forEach((item)=> s+=item.get('net'));
+                //data.positions().forEach((item)=> s+=item.get('net'));
                 return s;
             }
         }
     ],
 
-    hasMany: {model: 'ReportPosition', name: 'positions'},
+    hasMany: [
+        {model: 'ReportPosition', name: 'positions'},
+        {model: 'ReportSignum', name: 'signum'}
+    ]
     
 });
