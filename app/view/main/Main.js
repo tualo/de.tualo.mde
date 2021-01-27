@@ -21,7 +21,7 @@ Ext.define('TualoMDE.view.main.Main', {
         'TualoMDE.store.Tours',
         'TualoMDE.store.Navigation',
         'TualoMDE.store.Customers',
-        'TualoMDE.store.Positionen',
+        'TualoMDE.store.CArticles',
         'Ext.Toast',
         'Ext.d3.canvas.Canvas',
         'Ext.BreadcrumbBar'
@@ -36,7 +36,8 @@ Ext.define('TualoMDE.view.main.Main', {
         painted: 'onPainted'
     },
     items: [
-        {
+        
+        { // ################# 0
             xtype: 'panel',
             layout: {
                 type: 'vbox',
@@ -48,16 +49,16 @@ Ext.define('TualoMDE.view.main.Main', {
                 html: "Einen Moment bitte ..."
             }]
         },
-        {
+        { // ################# 1
             xtype: 'panel',
+            title: 'Anmeldung',
             layout: {
                 type: 'vbox',
-                align: 'center',
-                pack: 'center'
+                align: 'strech',
+                pack: 'top'
             },
             items: [{
                 xtype: 'panel',
-                title: 'Anmeldung',
                 border: true,
                 autoSize: true,
                 items: [
@@ -66,7 +67,6 @@ Ext.define('TualoMDE.view.main.Main', {
                         reference: 'loginform',
                         autoSize: true,
                         bodyPadding: 20,
-                        width: 320,
                         defaults: {
                             anchor: '100%'
                         },
@@ -129,7 +129,7 @@ Ext.define('TualoMDE.view.main.Main', {
                 ]
             }]
         },
-        {
+        { // ################# 2
             xtype: 'panel',
             layout: 'card',
             title: 'Datenerfassung',
@@ -139,49 +139,64 @@ Ext.define('TualoMDE.view.main.Main', {
                 xtype: 'button',
                 handler: 'onSearch'
 
-            }], 
-            items: [
-                {
-                    xtype: 'toolbar',
-                    docked: 'bottom',
-                    layout: {
-                        overflow: 'scroller'
-                    },
-                    items: [
-                        {
-                            xtype: 'label',
-                            padding: '0 0 0 15',
-                            bind: {
-                                html: '{fullname}'
-                            }
-                        },
-                        {
-                            xtype: 'spacer'
-                        },
-                        {
-                            xtype: 'button',
-                            bind: {
-                                text: '{currentClient}'
-                            },
-                            reference: 'clientMenu',
-                            iconCls: 'x-fa fa-bars',
-                            menu: {
-                                layout: {
-                                    overflow: 'scroller'
-                                },
-            
-                                items: []
-                            }
-                        },
-                        {
-                            xtype: 'button',
-                            iconCls: 'x-fa fa-sync',
-                            padding: '0 15 0 0',
-                            handler: 'onSyncClick'
-                        }
-                    ]
+            },{
+                iconCls: 'x-fa fa-bars',
+                arrow: false,
+                bind: {
+                    badgeText: '{unsynched}'
                 },
 
+                xtype: 'button',
+                menu: [
+                    {
+                        xtype: 'component',
+                        padding: '0 0 0 15',
+                        bind: {
+                            html: '{fullname}'
+                        }
+                    },{
+                        xtype: 'menuseparator'
+                    },
+                    {
+                        //xtype: 'button',
+                        text: 'Synchronisieren',
+                        iconCls: 'x-fa fa-sync',
+                        /*
+                        xtype: 'button',
+                        bind: {
+                            badgeText: '{unsynched}'
+                        },
+                        */
+                        //padding: '0 15 0 0',
+                        handler: 'onSyncClick'
+                    },
+                    {
+                        //xtype: 'button',
+                        text: 'Einstellungen',
+                        iconCls: 'x-fa fa-cog',
+                        //padding: '0 24 0 0',
+                        handler: 'onConfigClick'
+                    },
+                    {
+                        //xtype: 'button',
+                        text: 'Belege',
+                        iconCls: 'x-fa fa-list',
+                        //padding: '0 24 0 0',
+                        handler: 'onReportClick'
+                    },{
+                        xtype: 'menuseparator'
+                    },
+                    {
+                        xtype: 'component',
+                        padding: '0 0 0 15',
+                        bind: {
+                            html: '<span style="font-size: 0.8em">Version {version}</span>'
+                        }
+                    },
+                ]
+            }], 
+            items: [
+                
                 {
                     xtype: 'panel',
                     shadow: true,
@@ -243,22 +258,37 @@ Ext.define('TualoMDE.view.main.Main', {
                             layout: 'vbox',
                             items: [
                                 {
-                                    xtype: 'searchfield',
-                                    ui: 'solo',
+                                    margin: 10,
+                                    autoSize: true,
+                                    layout: 'vbox',
+                                    shadow: 'true',
+            
+                                    xtype: 'panel',
+                                    
                                     bind: {
                                         hidden: '{!searchmode}'
                                     },
-                                    placeholder: 'Suchen',
-                                    listeners: {
-                                        buffer: 1000,
-                                        change: 'doSearch'
-                                    }
+                                    items: [
+                                        {
+                                            xtype: 'searchfield',
+                                            ui: 'raised solo',
+                                            shaddow: true,
+                                            placeholder: 'Suchen',
+                                            listeners: {
+                                                buffer: 1000,
+                                                change: 'doSearch'
+                                            }
+                                        }
+                                    ]
+                                    
                                 },
                                 {
-                                    xtype: 'list',
+                                    xtype: 'componentdataview',
                                     iconCls: 'x-fa fa-users',
                                     reference: 'customers',
-                                    itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
+                                    padding: '12 12 12 12',
+                                    flex: 1,
+                                    //itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
                                     store: 'Kunden',
                                     plugins: {
                                         listswiper: {
@@ -287,6 +317,44 @@ Ext.define('TualoMDE.view.main.Main', {
                                     listeners: {
                                         //itemtaphold: 'onTourTab'
                                         itemtap: 'onCustomerTab'
+                                    },
+                                    layout: {
+                                        type: 'vbox',
+    
+                                    },
+                                    
+                                    itemConfig: {
+                                        xtype: 'panel',
+    
+                                        margin: '0 0 10 0',
+                                        minHeight: '60px',
+                                        viewModel: true, // enable per-record binding
+                                        layout: {
+                                            type: 'hbox',
+                                            align: 'strech'
+                                        },
+                                        items: [{
+                                            xtype: 'component',
+                                            width: '20px',
+                                            margin: '0 10 0 0',
+                                            bind: {
+                                                style: 'background-color:{record.farbe};',
+                                                
+                                            }
+                                        }, {
+                                            xtype: 'component',
+                                            flex: 1,
+                                            bind: {
+                                                html: '<b>{record.name}</b><br>{record.strasse} {record.hausnr}<br>{record.plz} {record.ort}'
+                                            }
+                                        }/*, {
+                                            xtype: 'component',
+                                            autoWidth: true,
+                                            style: 'text-align: right; font-weight: bold;',
+                                            bind: {
+                                                html: '{record.amount}'
+                                            }
+                                        }*/]
                                     }
                                 }
                             ]
@@ -314,22 +382,7 @@ Ext.define('TualoMDE.view.main.Main', {
                                 xtype: 'componentdataview',
                                 listeners: {
                                     //itemtaphold: 'onTourTab'
-                                    itemtap: function(list, index, target, record, e, eOpts){
-                                        Ext.Msg.prompt(
-                                            'Anzahl',
-                                            'Geben Sie die Menge für "'+record.get('article')+'" ein',
-                                            function(btn,val){
-                                                if (btn=='ok') record.set('amount',val);
-                                            },
-                                            this,
-                                            false,
-                                            record.get('amount'),
-                                            {
-                                                xtype: 'numberfield',
-                                                value: record.get('amount')
-                                            }
-                                        );
-                                    }
+                                    itemtap: 'onPositionTab'
                                 },
                                 plugins: {
                                     listswiper: {
@@ -459,10 +512,11 @@ Ext.define('TualoMDE.view.main.Main', {
                                 }, 
                                 {
                                     xtype: 'd3-canvas',
+                                    reference: 'd3',
                                     border: true,
                                     shaddow: true,
                                     margin: '12 12 12 12',
-                                    flex: 1,
+                                    flex: 2,
                                     listeners: {
                                         sceneresize: 'onSignumSceneResize',
                                         mousemove: {
@@ -488,20 +542,182 @@ Ext.define('TualoMDE.view.main.Main', {
                         }
                         
                     ]
+                }
+            ]
+        },
+        { // ################ 3
+            xtype: 'panel',
+            title: 'Einstellungen',
+            layout: {
+                type: 'vbox',
+                align: 'center',
+                pack: 'center'
+            },
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onSetupPrevious'
+                }]
+            },
+            items: [{
+                xtype: 'panel',
+                width: '50%',
+                bind: {
+                    html: "Sie sind angemeldet als,<br> <b>{fullname}</b>"
+                }
+            },{
+                margin: '25px 0 0 0',
+                xtype: 'button',
+                bind: {
+                    text: '{currentClient}'
                 },
+                reference: 'clientMenu',
+                width: '50%',
+                iconCls: 'x-fa fa-bars',
+                ui: 'raised',
+                menu: {
+                    layout: {
+                        overflow: 'scroller'
+                    },
+
+                    items: []
+                }
+            },
+            {
+                margin: '25px 0 0 0',
+                text: 'Abmelden',
+                xtype: 'button',
+                width: '50%',
+                handler: 'onLogoutClick',
+                iconCls: 'x-fa fa-door-open',
+                ui: 'raised decline'
+            }
+            ]
+        },
+
+
+
+        { // ################# 4
+            xtype: 'panel',
+            layout: 'card',
+            title: 'Belege',
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onSetupPrevious'
+                }]
+            },
+            items: [
+               
                 {
                     xtype: 'panel',
-                    layout: {
-                        type: 'vbox',
-                        align: 'center',
-                        pack: 'center'
-                    },
-                    items: [{
-                        xtype: 'panel',
-                        bind: {
-                            html: "Hallo {fullname}"
+                    shadow: true,
+                    reference: 'reportcard',
+
+                    scrollable: 'y',
+                    items: [
+                        
+                        {
+                            xtype: 'componentdataview',
+                            iconCls: 'x-fa fa-users',
+                            reference: 'customers',
+                            padding: '12 12 12 12',
+                            flex: 1,
+                            store: 'Belege',
+                            plugins: {
+                                listswiper: {
+                                    defaults: {
+                                        ui: 'action'
+                                    },
+                                    /*
+                                    left: [{
+                                        iconCls: 'x-fa fa-doc',
+                                        text: 'letzter Beleg',
+                                        commit: 'onReport'
+                                    }],
+                                    */
+                                    right: [{
+                                        iconCls: 'x-fa fa-trash',
+                                        ui: 'alt decline',
+                                        text: 'Löschen',
+                                        commit: 'onReportDelete'
+                                    }, {
+                                        iconCls: 'x-fa fa-edit',
+                                        ui: 'alt confirm',
+                                        text: 'Bearbeiten',
+                                        commit: 'onReportEdit'
+                                    }]
+                                }
+                            },
+                            listeners: {
+                                //itemtaphold: 'onTourTab'
+                                itemtap: 'onCustomerTab'
+                            },
+                            layout: {
+                                type: 'vbox',
+
+                            },
+                            
+                            itemConfig: {
+                                xtype: 'panel',
+
+                                margin: '0 0 10 0',
+                                minHeight: '60px',
+                                viewModel: true, // enable per-record binding
+                                layout: {
+                                    type: 'hbox',
+                                    align: 'strech'
+                                },
+                                /*bind: {
+                                    hidden: '{!record.__saved}'
+                                },
+                                */
+                                items: [{
+                                    xtype: 'component',
+                                    width: '20px',
+                                    margin: '0 10 0 0',
+                                    bind: {
+                                        style: 'background-color: grey;',
+                                        hidden: '{!record.__saved && !record.__synced}'
+                                        
+                                    }
+                                },{
+                                    xtype: 'component',
+                                    width: '20px',
+                                    margin: '0 10 0 0',
+                                    bind: {
+                                        style: 'background-color: yellow;',
+                                        hidden: '{record.__saved && !record.__synced}'
+                                        
+                                    }
+                                },{
+                                    xtype: 'component',
+                                    width: '20px',
+                                    margin: '0 10 0 0',
+                                    bind: {
+                                        style: 'background-color: green;',
+                                        hidden: '{!record.__synced}'
+                                        
+                                    }
+                                }, {
+                                    xtype: 'component',
+                                    flex: 1,
+                                    bind: {
+                                        html: '<b>{record.id}</b><br><pre>{record.address}</pre>'
+                                    }
+                                }, {
+                                    xtype: 'component',
+                                    autoWidth: true,
+                                    style: 'text-align: right; font-weight: bold;',
+                                    padding: '0 15 0 0',
+                                    bind: {
+                                        html: '{record.date:date("d.m.Y")}<br>{record.time:date("H:i")}'
+                                    }
+                                }]
+                            }
                         }
-                    }]
+                        
+                    ]
                 }
             ]
         }

@@ -4,7 +4,16 @@
  */
 Ext.define('TualoMDE.view.main.MainController', {
     extend: 'Ext.app.ViewController',
-
+    requires: [
+        'TualoMDE.view.main.mixin.MainControlllerSignum',
+        'TualoMDE.view.main.mixin.MainControlllerSearch',
+        'TualoMDE.view.main.mixin.MainControlllerPosition'
+    ],
+    mixins: [
+        'TualoMDE.view.main.mixin.MainControlllerSignum',
+        'TualoMDE.view.main.mixin.MainControlllerSearch',
+        'TualoMDE.view.main.mixin.MainControlllerPosition'
+    ],
     alias: 'controller.main',
     init: function() {
         var bbar = this.lookup('bbar'),
@@ -34,6 +43,41 @@ Ext.define('TualoMDE.view.main.MainController', {
                     }
                 });
             })
+        });
+
+        this.refreshReports();
+        /*
+        Ext.data.StoreManager.lookup('Belege').load({
+            callback: function(){
+                Ext.data.StoreManager.lookup('Belege').getRange()[7].positions().load({
+                    callback: function(){
+                        console.log(Ext.data.StoreManager.lookup('Belege').getRange()[7].positions());
+                    }
+                });
+            }
+        });
+        */
+        
+
+
+    },
+
+    refreshReports: function(){
+        Ext.data.StoreManager.lookup('Belege').load({
+            scope: this,
+            callback: function(){
+                let  model = this.getViewModel(),
+                    range = Ext.data.StoreManager.lookup('Belege').getRange(),
+                    count = 0;
+                range.forEach(function(item){
+                    count+=( (item.get('__synced')==false) && (item.get('__saved')==true) )?1:0;
+                });
+                if (count==0){
+                    model.set('unsynched','');
+                }else{
+                    model.set('unsynched',''+count);
+                }
+            }
         });
     },
     onKeyPressLast: function (me, e, o) {
@@ -103,6 +147,7 @@ Ext.define('TualoMDE.view.main.MainController', {
                         customerrecord.get('plz')+' '+customerrecord.get('ort')
             });
 
+            report.save();
         model.set('customerrecord',customerrecord);
         Ext.data.StoreManager.lookup('Artikel').clearFilter();
         Ext.data.StoreManager.lookup('Artikel').filterBy(function(rec){
@@ -132,206 +177,69 @@ Ext.define('TualoMDE.view.main.MainController', {
         model.set('report',report);
         card.next();
     },
-    onPositionNote: function(dataview,item){
-        Ext.Msg.prompt(
-            'Bemerkung',
-            'Geben Sie die Bemerkung ein',
-            function(btn,val){
-                if (btn=='ok') item.record.set('note',val);
-            },
-            this,
-            true,
-            item.record.get('note'),
-            {
-                xtype: 'textareafield'
-            }
-        );
+    onOverview: function(){
+        var card = this.lookup('maincard').getLayout(),
+        model = this.getViewModel(),
+        report = model.get('report');
+        report.signum().removeAll();
+
+        card.next();
+        this.drawSignum(this.lookup('d3').getCanvas());
     },
-    onPositionClear: function(dataview,item){
-        if(  (item.record.get('anzahl')!=0) ||  (item.record.get('bemerkung')!='') )
+    onSave: function(){
+        let  model = this.getViewModel(),
+            report = model.get('report');
+        report.set('__saved',true);
+        report.save({
+            callback: function(){
+                report.signum().sync({
+                    callback: function(){
+                        report.positions().sync();
+                    }
+                })
+            }
+        });
+        this.lookup('maincard').setActiveItem(1);
+        this.refreshReports();
+    },
+
+
+    onDestroy: function(){
+        console.log('onDestroy',arguments);
+    },
+
+    
+    onConfigClick: function(){
+        TualoMDE.getApplication().getMainView().setActiveItem(3);
+    },
+    
+    onReportClick: function(){
+        TualoMDE.getApplication().getMainView().setActiveItem(4);
+    },
+    onLogoutClick: function(){
+        TualoMDE.security.Authentication.logout(function(){});
+        TualoMDE.security.ClientStorage.clear();
+        TualoMDE.security.RemoteSetupStorage.clear();
+        TualoMDE.getApplication().getMainView().setActiveItem(1);
+    },
+    onSetupPrevious: function(){
+        TualoMDE.getApplication().getMainView().setActiveItem(2);
+    },
+    onReportDelete: function(dataview,item){
+        //if(  (item.record.get('anzahl')!=0) ||  (item.record.get('bemerkung')!='') )
         Ext.Msg.confirm(
-            'Leeren',
-            'Möchten Sie diesen Eintrag leeren?',
+            'Löschen',
+            'Möchten Sie den Beleg Nr. '+item.record.get('id')+' wirklich löschen?',
             function(btn,val){
                 if (btn=='yes'){
-                    item.record.set('bemerkung','');
-                    item.record.set('anzahl',0);
+                    Ext.data.StoreManager.lookup('Belege').remove(item.record);
                 }
             },
             this
         );
     },
-    onOverview: function(){
-        var card = this.lookup('maincard').getLayout();
-        this.getReportFromData();
-        card.next();
-    },
-    onSave: function(){
-        let  model = this.getViewModel(),
-            card = this.lookup('maincard').getLayout(),
-            signum = model.get('signum'),
-            report = model.get('report');
-
-        //report.signum().add(signum);
-        //model.set('report',report);
-        console.log(report);
-
-        card.previous();
-        card.previous();
-    },
-
-
-    onSignumMouseMove: function(e,canvas){
-        let  model = this.getViewModel(),
-            report = model.get('report');
-        let viewXY = this.view.el.getXY(),
-            pageXY = e.getXY(),
-            canvasRect = canvas.getBoundingClientRect();
-        let x = pageXY[0] - canvasRect.x;
-        let y = pageXY[1] - canvasRect.y;
-        if (model.get('signumDown')){
-            report.signum().add({x: x, y:y,pos: report.signum().count()});
-            this.drawSignum(canvas);
-        }
-    },
-    onSignumSceneResize: function (component, canvas, size) {
-        var barCount = 10,
-            barWidth = size.width / barCount,
-            barHeight = size.height,
-            context = canvas.getContext('2d'),
-            colors = d3.scaleOrdinal(d3.schemeCategory20),
-            i = 0;
-
-        context.fillStyle = '#ddd';
-        context.fillRect(0, 0, size.width,size.height);
-        this.drawSignum(canvas);
-    },
-    drawSignum: function(canvas){
-        let  model = this.getViewModel(),
-        report = model.get('report');
-
-
-        var ctx = canvas.getContext("2d");
-        ctx.lineWidth = 4;
-        var last = {x:-1,y:-1};
-        ctx.strokeStyle = "#000";
-
-        ctx.save();
-        report.signum().getRange().forEach(function(item){
-            console.log(item);
-            if (last.x!=-1){
-                if (item.get('x')!=-1){
-                    ctx.beginPath();
-                    ctx.moveTo(last.x, last.y);
-                    ctx.lineTo(item.get('x'), item.get('y'));
-                    ctx.stroke();
-                }
-            }
-            last.x = item.get('x');
-            last.y = item.get('y');
-            
-        });
-        ctx.restore();
-    },
-    onSignumMouseDown: function(e,canvas){
-        let  model = this.getViewModel(),
-            report = model.get('report');
-        let viewXY = this.view.el.getXY(),
-            pageXY = e.getXY(),
-            canvasRect = canvas.getBoundingClientRect();
-        let x = pageXY[0] - canvasRect.x;
-        let y = pageXY[1] - canvasRect.y;
-
-
-        model.set('signumDown',true);
-         
-        report.signum().add({x: -1, y:-1,pos: report.signum().count()});
-        report.signum().add({x: x, y:y,pos: report.signum().count()});
-         
-    },
-    onSignumMouseUp: function(e,canvas){
-        let  model = this.getViewModel(),
-            report = model.get('report');
-        let viewXY = this.view.el.getXY(),
-            pageXY = e.getXY(),
-            canvasRect = canvas.getBoundingClientRect();
-        let x = pageXY[0] - canvasRect.x;
-        let y = pageXY[1] - canvasRect.y;
-
-        model.set('signumDown',false);
-
-        report.signum().add({x: x, y:y,pos: report.signum().count()});
-        report.signum().add({x: -1, y:-1,pos: report.signum().count()});
-
-    },
-    onDestroy: function(){
-        console.log('onDestroy',arguments);
-    },
-    onSearch: function(){
-        let  model = this.getViewModel(),
-        maincard = this.lookup('maincard'),
-        card = maincard.getLayout();
-        
-        
-            model.set('searchmode',!model.get('searchmode') );
-        if( card.getIndicator().getActiveIndex() == 0 ){
-            model.set('tour', null);
-            Ext.data.StoreManager.lookup('Kunden').clearFilter();
-            Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
-                if  ( (rec.get('tour')==model.get('tour')) || (model.get('tour')==null) ) {
-                    return true;
-                }else{
-                    return false;
-                }
-            });
-            card.next();
-        }
-    },
-    doSearch: function(field){
-        let  model = this.getViewModel(),
-            value = field.getValue();
-        
-        Ext.data.StoreManager.lookup('Kunden').clearFilter();
-        Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
-            if  ( (rec.get('tour')==model.get('tour')) || (model.get('tour')==null) ) {
-                if (
-                    rec.get('name').toLowerCase().indexOf(value)>=0
-                ){
-                    return true;
-                }
-            }else{
-                return false;
-            }
-        });
-        
-    },
-    getReportFromData: function(){
-        let  model = this.getViewModel(),
-            card = this.lookup('maincard').getLayout(),
-            customer = model.get('customerrecord'),
-            positionen  = Ext.data.StoreManager.lookup('Positionen').getRange(),
-            o = {
-                "id": -1,
-                "date": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
-                "time": Ext.util.Format.date(model.get('currentDate'),'H:i:s'),
-                "bookingdate": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
-                "service_period_start": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
-                "service_period_stop": Ext.util.Format.date(model.get('currentDate'),'Y-m-d'),
-
-                "warehouse": 0,
-                "reference": model.get('referenceNumber'),
-                "address": [
-                    customer.get('name'),
-                    customer.get('strasse')+' '+customer.get('hausnr'),
-                    customer.get('plz')+' '+customer.get('ort')
-                ].join("\n"),
-                "companycode": customer.get('companycode'),
-                "office": customer.get('office'),
-        
-                "positions": [],
-                "signum": []
-            };
-    
-        console.log(o);
+    onReportEdit: function(dataview,item){
+        if(  (item.record.get('__synced')==false) )
+        console.log('edit');
     }
 });

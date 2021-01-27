@@ -1,4 +1,4 @@
-Ext.define('TualoMDE.model.Position', {
+Ext.define('TualoMDE.model.CArticle', {
     extend: 'TualoMDE.model.Base',
 
     fields: [

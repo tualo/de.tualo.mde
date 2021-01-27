@@ -33,4 +33,8 @@ Ext.define('TualoMDE.model.ReportPosition', {
         }
         
     ],
+    proxy: {
+        type: 'sql'
+        
+    }
 });

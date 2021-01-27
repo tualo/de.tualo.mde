@@ -24,10 +24,14 @@ Ext.define('TualoMDE.model.Report', {
         {name: "referencenr",           type:"string",  critical: true },
         {name: "costcenter",            type:"number",  critical: true },
         
+
+        {name: "__saved",            type:"boolean",  critical: false, default:false },
+        {name: "__synced",            type:"boolean",  critical: false, default:false },
+
         // {name: "positions"},
-        {name: "payments"},
-        {name: "reductions"},
-        {name: "texts"},
+//        {name: "payments"},
+//        {name: "reductions"},
+//        {name: "texts"},
 
         {
             name: "net", 
@@ -43,6 +47,10 @@ Ext.define('TualoMDE.model.Report', {
     hasMany: [
         {model: 'ReportPosition', name: 'positions'},
         {model: 'ReportSignum', name: 'signum'}
-    ]
+    ],
+    proxy: {
+        type: 'sql'
+        
+    }
     
 });

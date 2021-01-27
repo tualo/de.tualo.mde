@@ -8,6 +8,8 @@ Ext.define('TualoMDE.view.main.MainModel', {
 
     data: {
         name: 'TualoMDE',
+        version: '0.0.1',
+        unsynched: '0',
         fullname: '',
         tour: null,
         searchmode: false,

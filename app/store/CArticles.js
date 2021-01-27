@@ -1,10 +1,10 @@
-Ext.define('TualoMDE.store.Positionen', {
+Ext.define('TualoMDE.store.CArticles', {
     extend: 'Ext.data.Store',
 
-    alias: 'store.tours',
+    alias: 'store.carticles',
 
-    model: 'TualoMDE.model.Position',
-    storeId: 'Positionen',
+    model: 'TualoMDE.model.CArticle',
+    storeId: 'CArticles',
     sorters: 'position',
     proxy: {
         type: 'memory',

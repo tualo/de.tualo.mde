@@ -3,6 +3,26 @@
  * calls Ext.application(). This is the ideal place to handle application launch and
  * initialization details.
  */
+Ext.define('my.application.Ext.data.proxy.Sql',{
+    override: 'Ext.data.proxy.Sql', 
+    createTable: function(transaction) {
+        var me = this;
+
+        if (!transaction) {
+            me.executeTransaction(function(transaction) {
+                me.createTable(transaction);
+            });
+
+            return;
+        }
+
+        me.executeStatement(transaction, 'CREATE TABLE IF NOT EXISTS "' + me.getTable() + '" (' + me.getSchemaString() + ')',[], function() {
+            me.tableExists = true;
+        });
+    }
+});
+
+
 Ext.define('TualoMDE.Application', {
     extend: 'Ext.app.Application',
     requires: [
@@ -24,8 +44,11 @@ Ext.define('TualoMDE.Application', {
         'TualoMDE.store.Tours',
         'TualoMDE.store.Customers',
         'TualoMDE.store.Navigation',
-        'TualoMDE.store.Positionen',
-        'TualoMDE.store.Article'
+        'TualoMDE.store.CArticles',
+        'TualoMDE.store.Article',
+
+        'TualoMDE.store.ReportPositions',
+        'TualoMDE.store.Report'
     ],
 
     launch: function(){
@@ -74,7 +97,7 @@ Ext.define('TualoMDE.Application', {
         if (remoteData){
             Ext.data.StoreManager.lookup('Touren').loadData(remoteData.tours);
             Ext.data.StoreManager.lookup('Kunden').loadData(remoteData.customers);
-            Ext.data.StoreManager.lookup('Positionen').loadData(remoteData.carticles);
+            Ext.data.StoreManager.lookup('CArticles').loadData(remoteData.carticles);
             Ext.data.StoreManager.lookup('Artikel').loadData(remoteData.articles);
         }
     },
@@ -86,11 +109,12 @@ Ext.define('TualoMDE.Application', {
             params: {
                 'oauth_client': TualoMDE.security.ClientStorage.retrieve().client
             },
+            scope: this,
             success: function (response) {
                 var data = Ext.decode(response.responseText);
                 if (data.success) {
                     TualoMDE.security.RemoteSetupStorage.save(data);
-                    console.log(data);
+                    this.fillStores();
                     //deferred.resolve(data, response);
                 } else {
                     //deferred.reject(data, response);

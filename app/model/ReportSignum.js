@@ -7,5 +7,9 @@ Ext.define('TualoMDE.model.ReportSignum', {
         {name: "pos",            type:"number",  critical: true},
         {name: "x",              type:"number",  critical: true},
         {name: "y",              type:"number",  critical: true},
-    ]
+    ],
+    proxy: {
+        type: 'sql'
+        
+    }
 });
