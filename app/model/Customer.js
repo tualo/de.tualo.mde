@@ -34,7 +34,28 @@ Ext.define('TualoMDE.model.Customer', {
 
         {name: "notiz",type: "string"},
 
-        {name: "preiskategorie",type: "number"}
+
+        {name: "so_memo",type: "string"},
+        {name: "mo_memo",type: "string"},
+        {name: "di_memo",type: "string"},
+        {name: "mi_memo",type: "string"},
+        {name: "do_memo",type: "string"},
+        {name: "fr_memo",type: "string"},
+        {name: "sa_memo",type: "string"},
+        
+        {name: "preiskategorie",type: "number"},
+
+        {
+            name: "memo", 
+            type: "string", 
+            calculate: function (data) {
+                let w = ['so','mo','di','mi','do','fr','sa'];
+                console.log( w[ (new Date()).getDate() ] );
+                console.log( w[ (new Date()).getDate() ], w[ (new Date()).getDate()]+'_memo' );
+                return "";
+            }
+        }
+
     ]
 });
 

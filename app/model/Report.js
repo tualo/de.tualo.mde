@@ -24,6 +24,8 @@ Ext.define('TualoMDE.model.Report', {
         {name: "referencenr",           type:"string",  critical: true },
         {name: "costcenter",            type:"number",  critical: true },
         
+        {name: "__reporttype",           type:"string",  critical: true },
+        {name: "__reportclient",           type:"string",  critical: true },
 
         {name: "__saved",            type:"boolean",  critical: false, default:false },
         {name: "__synced",            type:"boolean",  critical: false, default:false },

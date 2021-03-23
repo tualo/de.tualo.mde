@@ -35,9 +35,79 @@ Ext.define('TualoMDE.view.main.Main', {
     listeners: {
         painted: 'onPainted'
     },
+    bind:{
+        title: '{currentTitle}'
+    },
+    tools: [{
+
+        iconCls: 'x-fa fa-search',
+        xtype: 'button',
+        handler: 'onSearch'
+
+    },{
+        iconCls: 'x-fa fa-bars',
+        arrow: false,
+        bind: {
+            badgeText: '{unsynched}'
+        },
+
+        xtype: 'button',
+        menu: [
+            {
+                xtype: 'component',
+                padding: '0 0 0 15',
+                bind: {
+                    html: '{fullname}'
+                }
+            },{
+                xtype: 'menuseparator'
+            },
+            {
+                //xtype: 'button',
+                text: 'Synchronisieren',
+                iconCls: 'x-fa fa-sync',
+                /*
+                xtype: 'button',
+                bind: {
+                    badgeText: '{unsynched}'
+                },
+                */
+                //padding: '0 15 0 0',
+                handler: 'onSyncClick'
+            },
+            {
+                //xtype: 'button',
+                text: 'Einstellungen',
+                iconCls: 'x-fa fa-cog',
+                //padding: '0 24 0 0',
+                handler: 'onConfigClick'
+            },
+            {
+                //xtype: 'button',
+                text: 'Belege',
+                iconCls: 'x-fa fa-list',
+                //padding: '0 24 0 0',
+                handler: 'onReportClick'
+            },{
+                xtype: 'menuseparator'
+            },
+            {
+                xtype: 'component',
+                padding: '0 0 0 15',
+                bind: {
+                    html: '<span style="font-size: 0.8em">Version {version}</span>'
+                }
+            },
+        ]
+    }], 
+
     items: [
         
+
         { // ################# 0
+            listeners: {
+                show: 'onShowWaitPanel'
+            },
             xtype: 'panel',
             layout: {
                 type: 'vbox',
@@ -49,9 +119,13 @@ Ext.define('TualoMDE.view.main.Main', {
                 html: "Einen Moment bitte ..."
             }]
         },
+        
         { // ################# 1
             xtype: 'panel',
-            title: 'Anmeldung',
+            // title: 'Anmeldung',
+            listeners: {
+                show: 'onShowLoginPanel'
+            },
             layout: {
                 type: 'vbox',
                 align: 'strech',
@@ -129,425 +203,389 @@ Ext.define('TualoMDE.view.main.Main', {
                 ]
             }]
         },
+
         { // ################# 2
             xtype: 'panel',
             layout: 'card',
-            title: 'Datenerfassung',
-            tools: [{
-
-                iconCls: 'x-fa fa-search',
-                xtype: 'button',
-                handler: 'onSearch'
-
-            },{
-                iconCls: 'x-fa fa-bars',
-                arrow: false,
-                bind: {
-                    badgeText: '{unsynched}'
-                },
-
-                xtype: 'button',
-                menu: [
-                    {
-                        xtype: 'component',
-                        padding: '0 0 0 15',
-                        bind: {
-                            html: '{fullname}'
-                        }
-                    },{
-                        xtype: 'menuseparator'
-                    },
-                    {
-                        //xtype: 'button',
-                        text: 'Synchronisieren',
-                        iconCls: 'x-fa fa-sync',
-                        /*
-                        xtype: 'button',
-                        bind: {
-                            badgeText: '{unsynched}'
-                        },
-                        */
-                        //padding: '0 15 0 0',
-                        handler: 'onSyncClick'
-                    },
-                    {
-                        //xtype: 'button',
-                        text: 'Einstellungen',
-                        iconCls: 'x-fa fa-cog',
-                        //padding: '0 24 0 0',
-                        handler: 'onConfigClick'
-                    },
-                    {
-                        //xtype: 'button',
-                        text: 'Belege',
-                        iconCls: 'x-fa fa-list',
-                        //padding: '0 24 0 0',
-                        handler: 'onReportClick'
-                    },{
-                        xtype: 'menuseparator'
-                    },
-                    {
-                        xtype: 'component',
-                        padding: '0 0 0 15',
-                        bind: {
-                            html: '<span style="font-size: 0.8em">Version {version}</span>'
-                        }
-                    },
-                ]
-            }], 
+            // title: 'Touren',
+            listeners: {
+                show: 'onShowTourPanel'
+            },
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onSetupPrevious',
+                    disabled: true
+                }]
+            },
             items: [
-                
+                {
+                    xtype: 'list',
+                    iconCls: 'x-fa fa-list',
+                    itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div>{tour}</div>',
+                    store: 'Touren',
+                    listeners: {
+                        //itemtaphold: 'onTourTab'
+                        itemtap: 'onTourTab'
+                    }
+                }
+            ]
+        },
+        { // ################# 3
+            xtype: 'panel',
+            layout: 'card',
+            // title: 'Kunden',
+            listeners: {
+                show: 'onShowCustomersPanel'
+            },
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onSetupPrevious'
+                }]
+            },
+            items: [
+                {
+                    xtype: 'componentdataview',
+                    iconCls: 'x-fa fa-users',
+                    padding: '12 12 12 12',
+                    flex: 1,
+                    reference: 'customers',
+                    //itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
+                    store: 'Kunden',
+                    plugins: {
+                        listswiper: {
+                            defaults: {
+                                ui: 'action'
+                            },
+                            
+                            left: [{
+                                iconCls: 'x-fa fa-doc',
+                                text: 'letzter Beleg',
+                                commit: 'onReport'
+                            }],
+                            
+                            right: [/*{
+                                iconCls: 'x-fa fa-envelope',
+                                ui: 'alt confirm',
+                                text: 'Message',
+                                commit: 'onMessage'
+                            }, */{
+                                iconCls: 'x-fa fa-map-marked',
+                                text: 'Karte',
+                                commit: 'onMap'
+                            }]
+                        }
+                    },
+                    listeners: {
+                        //itemtaphold: 'onTourTab'
+                        itemtap: 'onCustomerTab'
+                    },
+                    layout: {
+                        type: 'vbox',
+
+                    },
+                    
+                    itemConfig: {
+                        xtype: 'panel',
+
+                        margin: '0 0 10 0',
+                        minHeight: '60px',
+                        viewModel: true, // enable per-record binding
+                        layout: {
+                            type: 'hbox',
+                            align: 'strech'
+                        },
+                        items: [{
+                            xtype: 'component',
+                            width: '20px',
+                            margin: '0 10 0 0',
+                            bind: {
+                                style: 'background-color:{record.farbe};',
+                                
+                            }
+                        }, {
+                            xtype: 'component',
+                            flex: 1,
+                            bind: {
+                                html: '<b>{record.name}</b><br>{record.strasse} {record.hausnr}<br>{record.plz} {record.ort}'
+                            }
+                        }/*, {
+                            xtype: 'component',
+                            autoWidth: true,
+                            style: 'text-align: right; font-weight: bold;',
+                            bind: {
+                                html: '{record.amount}'
+                            }
+                        }*/]
+                    }
+                }
+            ]
+        },
+        { // ################# 4
+            xtype: 'panel',
+            layout: 'card',
+            //title: 'Beleg',
+            listeners: {
+                show: 'onShowReportEditPanel'
+            },
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onReportPrevious'
+                },{
+                    xtype: 'spacer'
+                },{
+                    text: '&raquo; Weiter',
+                    handler: 'onOverview'
+                }]
+            },
+            items: [
+                /*
                 {
                     xtype: 'panel',
-                    shadow: true,
-                    reference: 'maincard',
-                    layout: {
-                        type: 'card',
-                        // The controller inserts this indicator in our bbar
-                        // and we publish the active index and card count
-                        // so we can easily disable Next/Prev buttons.
-                        indicator: {
-                            reference: 'indicator',
-                            tapMode: 'direction',
-                            publishes: [
-                                'activeIndex',
-                                'count'
+                    shadow: 'true',
+                    layout: 'vbox',
+                    items: [
+                        {
+                            margin: 10,
+                            autoSize: true,
+                            layout: 'vbox',
+                            shadow: 'true',
+    
+                            xtype: 'panel',
+                            
+                            bind: {
+                                hidden: '{!searchmode}'
+                            },
+                            items: [
+                                {
+                                    xtype: 'searchfield',
+                                    ui: 'raised solo',
+                                    shaddow: true,
+                                    placeholder: 'Suchen',
+                                    listeners: {
+                                        buffer: 1000,
+                                        change: 'doSearch'
+                                    }
+                                }
                             ]
+                            
                         },
-                        animation: {
-                            type: 'slide'
-                        }
+                        
+                    ]
+                },
+                */
+                {
+                    xtype: 'panel',
+                    layout: {
+                        type: 'vbox'
                     },
-                    bbar: {
-                        reference: 'bbar',
-                        items: [{
-                            text: '&laquo; Zurück',
-                            handler: 'onPrevious',
-                            bind: {
-                                disabled: '{!indicator.activeIndex}'
+                    items: [{
+                        autoHeight: true,
+                        margin: '0 0 10 0',
+                        padding: '12 12 12 12',
+                        bind: {
+                            html: [
+                                'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
+                                '<pre>{report.address}</pre>'
+                                // '{customers.selection.telefon}',
+                            ].join('<br/>')
+                        }
+                    }, {
+                        flex: 2,
+                        padding: '12 12 12 12',
+                        xtype: 'componentdataview',
+                        listeners: {
+                            //itemtaphold: 'onTourTab'
+                            itemtap: 'onPositionTab'
+                        },
+                        plugins: {
+                            listswiper: {
+                                defaults: {
+                                    ui: 'action'
+                                },
+                                dismissOnTap: false,
+                                dismissOnScroll: false,
+                                
+                                
+                                left: [{
+                                    iconCls: 'x-fa fa-remove',
+                                    text: 'Leeren',
+                                    ui: 'decline',
+                                    commit: 'onPositionClear'
+                                }],
+                                
+                                right: [{
+                                    iconCls: 'x-fa fa-envelope',
+                                    ui: 'alt confirm',
+                                    text: 'Bemerkung',
+                                    commit: 'onPositionNote'
+                                }]
                             }
-                        },{
-                            text: 'Übersicht',
-                            handler: 'onOverview',
-                            bind: {
-                                hidden: '{indicator.activeIndex != 2}'
-                            }
-                        },{
-                            text: 'Speichern',
-                            handler: 'onSave',
-                            ui: 'confirm',
-                            bind: {
-                                hidden: '{indicator.activeIndex != 3}'
-                            }
-                        }]
+                        },
+                        //store: 'Positionen',
+                        bind:{
+                            store: '{report.positions}'
+                        },
+                        layout: {
+                            type: 'vbox',
+
+                        },
+                        scrollable: 'y',
+                        itemConfig: {
+                            xtype: 'panel',
+
+                            margin: '0 0 10 0',
+                            minHeight: '60px',
+                            viewModel: true, // enable per-record binding
+                            layout: {
+                                type: 'hbox',
+                                align: 'strech'
+                            },
+                            items: [{
+                                xtype: 'component',
+                                width: '20px',
+                                margin: '0 10 0 0',
+                                bind: {
+                                    style: 'background-color:{record.warengruppen_farbe};',
+                                    
+                                }
+                            }, {
+                                xtype: 'component',
+                                flex: 1,
+                                bind: {
+                                    html: '<b>{record.article}</b><br>{record.note}<br>'
+                                }
+                            }, {
+                                xtype: 'component',
+                                autoWidth: true,
+                                style: 'text-align: right; font-weight: bold;',
+                                bind: {
+                                    html: '{record.amount}'
+                                }
+                            }]
+                        }
+                    }]
+                }
+            ]
+        },
+        { // ################# 5
+            xtype: 'panel',
+            layout: 'card',
+            // title: 'Beleg',
+            listeners: {
+                show: 'onShowReportPanel'
+            },
+            tbar: {
+                items: [{
+                    text: '&laquo; Zurück',
+                    handler: 'onSetupPrevious'
+                },{
+                    xtype: 'spacer'
+                },{
+                    text: '&raquo; Speichern',
+                    ui: 'alt confirm',
+                    handler: 'onSave'
+                }]
+            },
+            items: [
+                {
+                    xtype: 'panel',
+                    layout: {
+                        type: 'vbox'
                     },
                     items: [
                         {
-                            xtype: 'list',
-                            iconCls: 'x-fa fa-list',
-                            itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div>{tour}</div>',
-                            store: 'Touren',
-                            listeners: {
-                                //itemtaphold: 'onTourTab'
-                                itemtap: 'onTourTab'
+                            autoHeight: true,
+                            margin: '0 0 10 0',
+                            padding: '12 12 12 12',
+                            bind: {
+                                html: [
+                                    'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
+                                    '<pre>{report.address}</pre>'
+                                    // '{customers.selection.telefon}',
+                                ].join('<br/>')
                             }
-                        },
+                        }, 
                         {
-                            xtype: 'panel',
-                            shadow: 'true',
-                            layout: 'vbox',
-                            items: [
-                                {
-                                    margin: 10,
-                                    autoSize: true,
-                                    layout: 'vbox',
-                                    shadow: 'true',
-            
-                                    xtype: 'panel',
-                                    
-                                    bind: {
-                                        hidden: '{!searchmode}'
-                                    },
-                                    items: [
-                                        {
-                                            xtype: 'searchfield',
-                                            ui: 'raised solo',
-                                            shaddow: true,
-                                            placeholder: 'Suchen',
-                                            listeners: {
-                                                buffer: 1000,
-                                                change: 'doSearch'
-                                            }
-                                        }
-                                    ]
-                                    
-                                },
-                                {
-                                    xtype: 'componentdataview',
-                                    iconCls: 'x-fa fa-users',
-                                    reference: 'customers',
-                                    padding: '12 12 12 12',
-                                    flex: 1,
-                                    //itemTpl: '<div><div style="background-color:{farbe};border-radius:20px;width:20px;height:20px;float:left;margin-right:12px;"></div> <b>{name}</b><br>{strasse} {hausnr}<br>{plz} {ort}</div>',
-                                    store: 'Kunden',
-                                    plugins: {
-                                        listswiper: {
-                                            defaults: {
-                                                ui: 'action'
-                                            },
-                                            
-                                            left: [{
-                                                iconCls: 'x-fa fa-doc',
-                                                text: 'letzter Beleg',
-                                                commit: 'onReport'
-                                            }],
-                                            
-                                            right: [{
-                                                iconCls: 'x-fa fa-envelope',
-                                                ui: 'alt confirm',
-                                                text: 'Message',
-                                                commit: 'onMessage'
-                                            }, {
-                                                iconCls: 'x-fa fa-cog',
-                                                text: 'Gear',
-                                                commit: 'onGear'
-                                            }]
-                                        }
-                                    },
-                                    listeners: {
-                                        //itemtaphold: 'onTourTab'
-                                        itemtap: 'onCustomerTab'
-                                    },
-                                    layout: {
-                                        type: 'vbox',
-    
-                                    },
-                                    
-                                    itemConfig: {
-                                        xtype: 'panel',
-    
-                                        margin: '0 0 10 0',
-                                        minHeight: '60px',
-                                        viewModel: true, // enable per-record binding
-                                        layout: {
-                                            type: 'hbox',
-                                            align: 'strech'
-                                        },
-                                        items: [{
-                                            xtype: 'component',
-                                            width: '20px',
-                                            margin: '0 10 0 0',
-                                            bind: {
-                                                style: 'background-color:{record.farbe};',
-                                                
-                                            }
-                                        }, {
-                                            xtype: 'component',
-                                            flex: 1,
-                                            bind: {
-                                                html: '<b>{record.name}</b><br>{record.strasse} {record.hausnr}<br>{record.plz} {record.ort}'
-                                            }
-                                        }/*, {
-                                            xtype: 'component',
-                                            autoWidth: true,
-                                            style: 'text-align: right; font-weight: bold;',
-                                            bind: {
-                                                html: '{record.amount}'
-                                            }
-                                        }*/]
-                                    }
-                                }
-                            ]
-                        },
-                        
-                        {
-                            xtype: 'panel',
-                            layout: {
-                                type: 'vbox'
+                            flex: 2,
+                            padding: '12 12 12 12',
+                            xtype: 'componentdataview',
+                            bind:{
+                                store: '{report.positions}'
                             },
-                            items: [{
-                                autoHeight: true,
-                                margin: '0 0 10 0',
-                                padding: '12 12 12 12',
+                            layout: {
+                                type: 'vbox',
+
+                            },
+                            scrollable: 'y',
+                            itemConfig: {
+                                xtype: 'panel',
                                 bind: {
-                                    html: [
-                                        'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
-                                        '<pre>{report.address}</pre>'
-                                        // '{customers.selection.telefon}',
-                                    ].join('<br/>')
-                                }
-                            }, {
-                                flex: 2,
-                                padding: '12 12 12 12',
-                                xtype: 'componentdataview',
-                                listeners: {
-                                    //itemtaphold: 'onTourTab'
-                                    itemtap: 'onPositionTab'
+                                    hidden: '{record.amount==0}'
                                 },
-                                plugins: {
-                                    listswiper: {
-                                        defaults: {
-                                            ui: 'action'
-                                        },
-                                        dismissOnTap: false,
-                                        dismissOnScroll: false,
-                                        
-                                        
-                                        left: [{
-                                            iconCls: 'x-fa fa-remove',
-                                            text: 'Leeren',
-                                            ui: 'decline',
-                                            commit: 'onPositionClear'
-                                        }],
-                                        
-                                        right: [{
-                                            iconCls: 'x-fa fa-envelope',
-                                            ui: 'alt confirm',
-                                            text: 'Bemerkung',
-                                            commit: 'onPositionNote'
-                                        }]
-                                    }
-                                },
-                                //store: 'Positionen',
-                                bind:{
-                                    store: '{report.positions}'
-                                },
+                                margin: '0 0 0 0',
+                                minHeight: '60px',
+                                viewModel: true, // enable per-record binding
                                 layout: {
-                                    type: 'vbox',
-
+                                    type: 'hbox',
+                                    align: 'strech'
                                 },
-                                scrollable: 'y',
-                                itemConfig: {
-                                    xtype: 'panel',
-
-                                    margin: '0 0 10 0',
-                                    minHeight: '60px',
-                                    viewModel: true, // enable per-record binding
-                                    layout: {
-                                        type: 'hbox',
-                                        align: 'strech'
-                                    },
-                                    items: [{
-                                        xtype: 'component',
-                                        width: '20px',
-                                        margin: '0 10 0 0',
-                                        bind: {
-                                            style: 'background-color:{record.warengruppen_farbe};',
-                                            
-                                        }
-                                    }, {
-                                        xtype: 'component',
-                                        flex: 1,
-                                        bind: {
-                                            html: '<b>{record.article}</b><br>{record.note}<br>'
-                                        }
-                                    }, {
-                                        xtype: 'component',
-                                        autoWidth: true,
-                                        style: 'text-align: right; font-weight: bold;',
-                                        bind: {
-                                            html: '{record.amount}'
-                                        }
-                                    }]
-                                }
-                            }]
-                        },
-                        {
-                            xtype: 'panel',
-                            layout: {
-                                type: 'vbox'
-                            },
-                            items: [
-                                {
-                                    autoHeight: true,
-                                    margin: '0 0 10 0',
-                                    padding: '12 12 12 12',
+                                items: [{
+                                    xtype: 'component',
+                                    flex: 1,
                                     bind: {
-                                        html: [
-                                            'K.Nr.: <b>{report.referencenr}/{report.costcenter}</b>',
-                                            '<pre>{report.address}</pre>'
-                                            // '{customers.selection.telefon}',
-                                        ].join('<br/>')
+                                        html: '{record.article}<br>{record.note}'
                                     }
-                                }, 
-                                {
-                                    flex: 2,
-                                    padding: '12 12 12 12',
-                                    xtype: 'componentdataview',
-                                    bind:{
-                                        store: '{report.positions}'
-                                    },
-                                    layout: {
-                                        type: 'vbox',
-    
-                                    },
-                                    scrollable: 'y',
-                                    itemConfig: {
-                                        xtype: 'panel',
-                                        bind: {
-                                            hidden: '{record.amount==0}'
-                                        },
-                                        margin: '0 0 0 0',
-                                        minHeight: '60px',
-                                        viewModel: true, // enable per-record binding
-                                        layout: {
-                                            type: 'hbox',
-                                            align: 'strech'
-                                        },
-                                        items: [{
-                                            xtype: 'component',
-                                            flex: 1,
-                                            bind: {
-                                                html: '{record.article}<br>{record.note}'
-                                            }
-                                        }, {
-                                            xtype: 'component',
-                                            autoWidth: true,
-                                            style: 'text-align: right;',
-                                            bind: {
-                                                html: '{record.amount}'
-                                            }
-                                        }]
+                                }, {
+                                    xtype: 'component',
+                                    autoWidth: true,
+                                    style: 'text-align: right;',
+                                    bind: {
+                                        html: '{record.amount}'
                                     }
-                                }, 
-                                {
-                                    xtype: 'd3-canvas',
-                                    reference: 'd3',
-                                    border: true,
-                                    shaddow: true,
-                                    margin: '12 12 12 12',
-                                    flex: 2,
-                                    listeners: {
-                                        sceneresize: 'onSignumSceneResize',
-                                        mousemove: {
-                                            fn: 'onSignumMouseMove',
-                                            element: 'element',
-                                            scope: 'controller'
-                                        },
-                                        mousedown: {
-                                            fn: 'onSignumMouseDown',
-                                            element: 'element',
-                                            scope: 'controller'
-                                        },
-                                        mouseup: {
-                                            fn: 'onSignumMouseUp',
-                                            element: 'element',
-                                            scope: 'controller'
-                                        },
-                                        destroy: 'onDestroy'
-                            
-                                    }
-                                }
-                            ]
+                                }]
+                            }
+                        }, 
+                        {
+                            xtype: 'd3-canvas',
+                            reference: 'd3',
+                            border: true,
+                            shaddow: true,
+                            margin: '12 12 12 12',
+                            flex: 2,
+                            listeners: {
+                                sceneresize: 'onSignumSceneResize',
+                                mousemove: {
+                                    fn: 'onSignumMouseMove',
+                                    element: 'element',
+                                    scope: 'controller'
+                                },
+                                mousedown: {
+                                    fn: 'onSignumMouseDown',
+                                    element: 'element',
+                                    scope: 'controller'
+                                },
+                                mouseup: {
+                                    fn: 'onSignumMouseUp',
+                                    element: 'element',
+                                    scope: 'controller'
+                                },
+                                destroy: 'onDestroy'
+                    
+                            }
                         }
-                        
                     ]
                 }
             ]
         },
-        { // ################ 3
+
+        { // ################ 6
             xtype: 'panel',
-            title: 'Einstellungen',
+            listeners: {
+                show: 'onShowSetupPanel'
+            },
             layout: {
                 type: 'vbox',
                 align: 'center',
@@ -597,10 +635,12 @@ Ext.define('TualoMDE.view.main.Main', {
 
 
 
-        { // ################# 4
+        { // ################# 7
             xtype: 'panel',
             layout: 'card',
-            title: 'Belege',
+            listeners: {
+                show: 'onShowReportsPanel'
+            },
             tbar: {
                 items: [{
                     text: '&laquo; Zurück',
@@ -649,10 +689,12 @@ Ext.define('TualoMDE.view.main.Main', {
                                     }]
                                 }
                             },
+                            /*
                             listeners: {
                                 //itemtaphold: 'onTourTab'
                                 itemtap: 'onCustomerTab'
                             },
+                            */
                             layout: {
                                 type: 'vbox',
 

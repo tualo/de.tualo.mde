@@ -12,6 +12,7 @@ Ext.define('TualoMDE.view.main.MainModel', {
         unsynched: '0',
         fullname: '',
         tour: null,
+        currentTitle: 'tualo',
         searchmode: false,
         customerrecord: false,
         currentClient: '',
@@ -23,7 +24,9 @@ Ext.define('TualoMDE.view.main.MainModel', {
         overview: 'Keine Daten vorhanden.',
         signumDown: false,
         signumXY: [-1,-1],
-        signum: []
+        signum: [],
+
+        reportbackindex: 7
     },
     stores: {
         report: {

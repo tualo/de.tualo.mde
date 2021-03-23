@@ -16,6 +16,7 @@ Ext.define('TualoMDE.view.main.MainController', {
     ],
     alias: 'controller.main',
     init: function() {
+        /*
         var bbar = this.lookup('bbar'),
             card = this.lookup('maincard').getLayout(),
 
@@ -24,6 +25,7 @@ Ext.define('TualoMDE.view.main.MainController', {
 
         // Render it into our bottom toolbar (bbar)
         bbar.insert(1, indicator);
+        */
     },
 
     onPainted: function(){
@@ -68,9 +70,11 @@ Ext.define('TualoMDE.view.main.MainController', {
             callback: function(){
                 let  model = this.getViewModel(),
                     range = Ext.data.StoreManager.lookup('Belege').getRange(),
-                    count = 0;
+                    count = 0,
+                    countunsaved = 0;
                 range.forEach(function(item){
                     count+=( (item.get('__synced')==false) && (item.get('__saved')==true) )?1:0;
+                    countunsaved+=( (item.get('__saved')==false) )?1:0;
                 });
                 if (count==0){
                     model.set('unsynched','');
@@ -109,15 +113,15 @@ Ext.define('TualoMDE.view.main.MainController', {
     },
 
 
-    onPrevious: function() {
+    onReportPrevious: function(){
+        let  model = this.getViewModel();
 
-        var card = this.lookup('maincard').getLayout();
-        card.previous();
+        TualoMDE.getApplication().getMainView().setActiveItem(model.get('reportbackindex'));
     },
     onTourTab: function(list, index, target, record, e, eOpts){
-        let  model = this.getViewModel(),
-            card = this.lookup('maincard').getLayout();
+        let  model = this.getViewModel();
 
+        
         model.set('tour',record.get('tour'));
         Ext.data.StoreManager.lookup('Kunden').clearFilter();
         Ext.data.StoreManager.lookup('Kunden').filterBy(function(rec){
@@ -127,20 +131,25 @@ Ext.define('TualoMDE.view.main.MainController', {
                 return false;
             }
         });
-        card.next();
+        //card.next();
+
+        TualoMDE.getApplication().getMainView().setActiveItem(3);
     },
     onCustomerTab: function(list, index, target, customerrecord, e, eOpts){
+        let  model = this.getViewModel();
+        model.set('reportbackindex',3);
         this.onNewReport('',customerrecord);
     },
     onNewReport: function(reporttype,customerrecord){
         let  model = this.getViewModel(),
-            card = this.lookup('maincard').getLayout(),
             pos = [],
             range = [],
             position = 0,
             report = new TualoMDE.model.Report({
                 referencenr: customerrecord.get('kundennummer'),
                 costcenter: customerrecord.get('kostenstelle'),
+                __reporttype: reporttype,
+                __reportclient: model.get('currentClient'),
                 address:
                         customerrecord.get('name')+"\n"+
                         customerrecord.get('strasse')+' '+customerrecord.get('hausnr')+"\n"+
@@ -171,19 +180,20 @@ Ext.define('TualoMDE.view.main.MainController', {
                 taxrate: rec.get('steuer')
             }));
         });
-        console.log(report);
+        console.log('report',report);
         report.positions().add(pos);
 
         model.set('report',report);
-        card.next();
+        //card.next();
+        TualoMDE.getApplication().getMainView().setActiveItem(4);
     },
     onOverview: function(){
-        var card = this.lookup('maincard').getLayout(),
-        model = this.getViewModel(),
+        var model = this.getViewModel(),
         report = model.get('report');
         report.signum().removeAll();
 
-        card.next();
+        //card.next();
+        TualoMDE.getApplication().getMainView().setActiveItem(5);
         this.drawSignum(this.lookup('d3').getCanvas());
     },
     onSave: function(){
@@ -199,7 +209,7 @@ Ext.define('TualoMDE.view.main.MainController', {
                 })
             }
         });
-        this.lookup('maincard').setActiveItem(1);
+        TualoMDE.getApplication().getMainView().setActiveItem(3);
         this.refreshReports();
     },
 
@@ -210,11 +220,11 @@ Ext.define('TualoMDE.view.main.MainController', {
 
     
     onConfigClick: function(){
-        TualoMDE.getApplication().getMainView().setActiveItem(3);
+        TualoMDE.getApplication().getMainView().setActiveItem(6);
     },
     
     onReportClick: function(){
-        TualoMDE.getApplication().getMainView().setActiveItem(4);
+        TualoMDE.getApplication().getMainView().setActiveItem(7);
     },
     onLogoutClick: function(){
         TualoMDE.security.Authentication.logout(function(){});
@@ -239,7 +249,54 @@ Ext.define('TualoMDE.view.main.MainController', {
         );
     },
     onReportEdit: function(dataview,item){
-        if(  (item.record.get('__synced')==false) )
-        console.log('edit');
+        let  model = this.getViewModel();
+        if(  (item.record.get('__synced')==false) ){
+            console.log('report',item.record);
+            item.record.positions().load({
+                callback: function(){
+                    console.log(arguments)
+                }
+            });
+            model.set('report',item.record);
+            model.set('reportbackindex',7);
+            TualoMDE.getApplication().getMainView().setActiveItem(4);
+        }
+    },
+
+    onMap: function(dataview,item){
+        window.open("maps:q="+item.record.get('plz')+','+item.record.get('ort')+','+item.record.get('strasse')+' '+item.record.get('hausnr'),'_blank');
+    },
+
+    onShowWaitPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','')
+    },
+    onShowLoginPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Anmeldung')
+    },
+    onShowTourPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Touren')
+    },
+    onShowCustomersPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Tour')
+    },
+    onShowReportEditPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Beleg bearbeiten')
+    },
+    onShowReportPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Beleg')
+    },
+    onShowSetupPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Einstellungen')
+    },
+    onShowReportsPanel: function(){
+        let  model = this.getViewModel();
+        model.set('currentTitle','Belegliste')
     }
 });
